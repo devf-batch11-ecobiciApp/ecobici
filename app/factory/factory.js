@@ -7,7 +7,6 @@
 		factory._bikeStationMarkerGroup = new L.featureGroup();
 		factory._markerLayerGroup = new L.layerGroup();
 		factory._LayerGroup = L.layerGroup();
-		//factory._colonia = null;
 
 		factory.map = function() {
 			L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicG9rYXhwZXJpYSIsImEiOiJjaW13eHJ2NHMwM2Uwdjdra3c1bWF3Nzd6In0.leOLCkHazd_6JAQtdiHOFw', {
@@ -72,22 +71,6 @@
 			});
 			return deferr.promise;
 		}
-
-/*		factory.filterColonia = function(colony) {
-			console.log(colony)
-			if (colony === "Centro Histórico" || colony === "Colonia Centro") {
-				factory._colonia = "Centro";	
-			}
-			if (colony === "Escandón I Secc") {
-				factory._colonia = "Escandón";	
-			}
-			if (colony === "Roma Nte.") {
-				factory._colonia = "Roma Norte";
-			}
-			console.log(factory._colonia)
-
-			return factory._colonia;
-		}*/
 
 		return factory;
 	}

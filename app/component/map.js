@@ -27,13 +27,6 @@
 					_stations = result.data.stations;
 				}
 			});
-
-/*			factoryEcobici.getStadistics()
-			.then(function(result){
-				console.log(result);
-			}, function(error){
-				console.log(error);
-			});*/
 	
 			function clickMap(e) {
 				factoryEcobici._zp_icon();
@@ -59,7 +52,6 @@
 			}
 
 			function _setStations (results) {
-				//console.log(_colonia)
 				if (_colonia) {
 					if (_address.split(", ")[1] === "Centro Histórico" || _address.split(", ")[1] === "Colonia Centro") {
 						_colonia = "Centro";	
