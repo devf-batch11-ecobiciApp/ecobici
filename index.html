@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="ecobici">
+<html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
@@ -8,25 +8,27 @@
 <link rel="stylesheet" href="assets/theme.css">
 <!-- CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://maps.googleapis.com/maps/api/js?&libraries=places&language=es&key=AIzaSyCa4cJrJzC1_ICMNz0rD7pdAQkeM9I7WfU"></script>
 
 <head>
 	<title>Ecobici</title>
 </head>
 
-<body>
-<map></map>
+<body ng-app="ecobici">
+	<map></map>
 
 
-<script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-resource.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-route.min.js"></script>
-<script src="app/app.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-materialize/0.2.1/angular-materialize.min.js"></script>
-<script src="app/factory/factory.js"></script>
-<script src="app/component/map.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+	<script src="./node_modules/underscore/underscore-min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+	<script src="./bower_components/angular/angular.min.js"></script>
+	<script src="./bower_components/angular-animate/angular-animate.min.js"></script>
+	<script src="./bower_components/angular-aria/angular-aria.min.js"></script>
+	<script src="./bower_components/angular-material/angular-material.min.js"></script>
+	<script src="./bower_components/angular-messages/angular-messages.min.js"></script>
+	<script src="app/app.js"></script>
+	<script src="app/factory/factory.js"></script>
+	<script src="app/component/map.js"></script>
 
 </body>
 </html>

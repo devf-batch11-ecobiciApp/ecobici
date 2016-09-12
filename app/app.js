@@ -2,5 +2,6 @@
   'use strict';
 
   angular
-    .module('ecobici', ['ngResource','ngRoute']);
-})()
+    .module('ecobici', [])
+    .constant('_', window._);
+})();

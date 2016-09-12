@@ -1,47 +1,122 @@
-(function() {
-    'use strict';
+(function(){
+		'use strict';
 
-    var map = {
-        templateUrl: './app/component/map.html',
-        controller: mapCtrl
-    }
-    angular
-        .module('ecobici')
-        .component('map', map);
+		var map = {
+			templateUrl: './app/component/map.html',
+			controller: MapCtrl
+		}
 
-    mapCtrl.$inject = ["apiEcobici"];
+		function MapCtrl(factoryEcobici, _) {
+			var map = this;
+			var geocoder = new google.maps.Geocoder;
+  		var infowindow = new google.maps.InfoWindow;
+  		var _map = factoryEcobici._map_element;
+			var _marker = null			
+  		var _zp = null;
+  		var _address = null;
+  		var _colonia = null;
+  		var _stations = null;
+			var _bikeStationMarker = null;
+			var _currentZp = null;
+			var _previousZp = null;
 
-    function mapCtrl(apiEcobici) {
-    	var map = this;
+			factoryEcobici.map(_map);
+			factoryEcobici.getStations()
+			.then(function(result){
+				if (result.statusText === "OK") {
+					_stations = result.data.stations;
+				}
+			});
 
-        var circleLayer = new L.layerGroup();
-        var circle = null;
+/*			factoryEcobici.getStadistics()
+			.then(function(result){
+				console.log(result);
+			}, function(error){
+				console.log(error);
+			});*/
+	
+			function clickMap(e) {
+				factoryEcobici._zp_icon();
+				_marker = L.marker([e.latlng.lat, e.latlng.lng]);
+				factoryEcobici._markerLayerGroup.addLayer(_marker);
+				factoryEcobici._markerLayerGroup.addTo(_map);
+				var latlng = {lat: parseFloat(e.latlng.lat), lng: parseFloat(e.latlng.lng)};
+				geocoder.geocode({'location': latlng}, function(results, status) {
+					if (status === "OK") {
+						//console.log(results)
+						_address = results[0].formatted_address;
+						_colonia = _address.split(", ")[1];
 
-        var mymap = L.map('mapid').setView([19.426611, -99.14447], 13);
+						_previousZp = _currentZp;
+						_currentZp = _colonia;
 
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'mapbox.streets'
-        }).addTo(mymap);
+						if(_previousZp !== _currentZp){
+							factoryEcobici.clear_layer();
+							_setStations(results)
+						}
+					}
+				});
+			}
+
+			function _setStations (results) {
+				//console.log(_colonia)
+				if (_colonia) {
+					if (_address.split(", ")[1] === "Centro Histórico" || _address.split(", ")[1] === "Colonia Centro") {
+						_colonia = "Centro";	
+					}
+					if (_address.split(", ")[1] === "Escandón I Secc" || _address.split(", ")[1] === "Escandón II Secc") {
+						_colonia = "Escandón";	
+					}
+					if (_address.split(", ")[1] === "Roma Nte.") {
+						_colonia = "Roma Norte";
+					}
+					if (_address.split(", ")[1] === "Tlacoquemecatl del Valle") {
+						_colonia = "Tlacoquemecatl";
+					}
+					if (_address.split(", ")[1] === "Col del Valle Centro") {
+						_colonia = "Del Valle Centro";
+					}
+					if (_address.split(", ")[1] === "Polanco I Secc" || _address.split(", ")[1] === "Polanco II Secc" || _address.split(", ")[1] === "Polanco III Secc" || _address.split(", ")[1] === "Polanco IV Secc" || _address.split(", ")[1] === "Polanco V Secc") {
+						_colonia = "Polanco";
+					}
+
+					_zp = _address.split(", ")[2].split(" ")[0];
+					var near_stations = _.filter(_stations, function(a){
+						return a.districtName === _colonia;
+					});
+
+					_.each(near_stations, function(b){
+						factoryEcobici._bikeStationMarker = L.marker([b.location.lat, b.location.lon], {icon: factoryEcobici.custom_icon()}).bindPopup(b.name).on('click', _markerClick);
+						factoryEcobici._bikeStationMarkerGroup.addLayer(factoryEcobici._bikeStationMarker);
+						factoryEcobici._bikeStationMarkerGroup.addTo(_map);
+					});
+					
+					if (factoryEcobici._bikeStationMarkerGroup._leaflet_id !== undefined) {
+						_map.fitBounds(factoryEcobici._bikeStationMarkerGroup.getBounds());
+					}
+				}
+			}
+
+			function _markerClick(e){
+				factoryEcobici.getStadistics(this._popup._content.split(" ")[0])
+				.then(function(result){
+					_setArriveStation(result.data.result.records);
+				}, function(error){
+					console.log(error)
+				});
+			};
+
+			function _setArriveStation(arriveStation) {
+				var count = _.each(arriveStation, "Ciclo_Estacion_Arribo");
+				console.log(count)
+			}
 
 
-        function clickMap(e) {
-            circleLayer.clearLayers();
-            circle = L.circle([e.latlng.lat, e.latlng.lng], 500, {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.5
-            });
-            circleLayer.addLayer(circle);
-            circleLayer.addTo(mymap);
-            mymap.fitBounds(e.target.getBounds());
-        }
+			_map.on('click', clickMap);
+		}
 
-        mymap.on('click', clickMap);
-
-
-    }
-})()
+		angular
+		.module('ecobici')
+		.component('map', map);
+		MapCtrl.$inject = ["factoryEcobici", "_"];
+})();
