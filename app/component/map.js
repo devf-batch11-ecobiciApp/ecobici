@@ -22,6 +22,7 @@
 			var _previousZp = null;
 			var _numArrives = [];
 			var _numStation = [];
+			var concurrences = [];
 
 			factoryEcobici.map(_map);
 			factoryEcobici.getStations()
@@ -115,23 +116,13 @@
 				console.log(count);
 
 				_.map(count, function(num, key){
-					console.log(num);
-					console.log(key);
-					_numArrives.push(num);
-					_numStation.push(key);
-				});
-
-
-
-				var arrive_stations = _.filter(_stations, function(a, b){
-					//console.log(a.id);
-					if(_numStation[b] === _stations[a.id]){
-						//console.log(_stations[_numStation[a]]);
-					}
+					// _numArrives.push(num);
+					// _numStation.push(parseInt(key));
+					var arrive_stations = _.findWhere(_stations ,{id:parseInt(key)});
+					console.log(arrive_stations);
 				});
 
 			}
-
 
 			_map.on('click', clickMap);
 		}
