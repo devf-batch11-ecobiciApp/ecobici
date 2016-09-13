@@ -8,6 +8,30 @@
 		factory._markerLayerGroup = new L.layerGroup();
 		factory._LayerGroup = L.layerGroup();
 
+		factory.loaderTemplate = [
+			'<div class="m-loading">',
+				'<div id="floatingCirclesG">',
+					'<div class="f_circleG" id="frotateG_01"></div>',
+					'<div class="f_circleG" id="frotateG_02"></div>',
+					'<div class="f_circleG" id="frotateG_03"></div>',
+					'<div class="f_circleG" id="frotateG_04"></div>',
+					'<div class="f_circleG" id="frotateG_05"></div>',
+					'<div class="f_circleG" id="frotateG_06"></div>',
+					'<div class="f_circleG" id="frotateG_07"></div>',
+					'<div class="f_circleG" id="frotateG_08"></div>',
+				'</div>',
+			'</div>',
+		].join('');
+
+		/* Loader layer map */
+		factory.layerIsLoading = function(){
+			return angular.element(document.getElementsByTagName("body")).append(factory.loaderTemplate);
+		};
+
+		factory.layerIsLoaded = function(){
+			return angular.element(document.getElementsByClassName('m-loading')).remove();
+		};
+
 		factory.map = function() {
 			L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicG9rYXhwZXJpYSIsImEiOiJjaW13eHJ2NHMwM2Uwdjdra3c1bWF3Nzd6In0.leOLCkHazd_6JAQtdiHOFw', {
 				maxZoom: 18,
@@ -53,6 +77,7 @@
 		factory.getStadistics = function(cer) {
 			var deferr = $q.defer();
       var data = {
+      	limit: 10,
         resource_id: 'ac80d8cf-15f4-4b15-9b98-b1451ce49acf',
         filters: {
           "Ciclo_Estacion_Retiro": cer
