@@ -3,10 +3,11 @@
 
 		var map = {
 			templateUrl: './app/component/map.html',
-			controller: MapCtrl
+			controller: MapCtrl,
+			replace:true
 		}
 
-		function MapCtrl(factoryEcobici, _) {
+		function MapCtrl(factoryEcobici, serviceEcobici, _, $timeout) {
 			var map = this;
 			var geocoder = new google.maps.Geocoder;
   		var infowindow = new google.maps.InfoWindow;
@@ -19,6 +20,8 @@
 			var _bikeStationMarker = null;
 			var _currentZp = null;
 			var _previousZp = null;
+			var _numArrives = [];
+			var _numStation = [];
 
 			factoryEcobici.map(_map);
 			factoryEcobici.getStations()
@@ -45,7 +48,8 @@
 
 						if(_previousZp !== _currentZp){
 							factoryEcobici.clear_layer();
-							_setStations(results)
+							_setStations(results);
+							serviceEcobici.layerIsLoading();
 						}
 					}
 				});
@@ -53,6 +57,7 @@
 
 			function _setStations (results) {
 				if (_colonia) {
+					
 					if (_address.split(", ")[1] === "Centro Histórico" || _address.split(", ")[1] === "Colonia Centro") {
 						_colonia = "Centro";	
 					}
@@ -78,20 +83,27 @@
 					});
 
 					_.each(near_stations, function(b){
-						factoryEcobici._bikeStationMarker = L.marker([b.location.lat, b.location.lon], {icon: factoryEcobici.custom_icon()}).bindPopup(b.name).on('click', _markerClick);
-						factoryEcobici._bikeStationMarkerGroup.addLayer(factoryEcobici._bikeStationMarker);
-						factoryEcobici._bikeStationMarkerGroup.addTo(_map);
+						$timeout(function(){
+							serviceEcobici.layerIsLoaded();
+							factoryEcobici._bikeStationMarker = L.marker([b.location.lat, b.location.lon], {icon: factoryEcobici.custom_icon()}).bindPopup(b.name).on('click', _markerClick);
+							factoryEcobici._bikeStationMarkerGroup.addLayer(factoryEcobici._bikeStationMarker);
+							factoryEcobici._bikeStationMarkerGroup.addTo(_map);
+							if (factoryEcobici._bikeStationMarkerGroup._leaflet_id !== undefined) {
+								_map.fitBounds(factoryEcobici._bikeStationMarkerGroup.getBounds());
+							}
+						},1500);
+
 					});
 					
-					if (factoryEcobici._bikeStationMarkerGroup._leaflet_id !== undefined) {
-						_map.fitBounds(factoryEcobici._bikeStationMarkerGroup.getBounds());
-					}
+
+
 				}
 			}
 
 			function _markerClick(e){
 				factoryEcobici.getStadistics(this._popup._content.split(" ")[0])
 				.then(function(result){
+					//console.log(result);
 					_setArriveStation(result.data.result.records);
 				}, function(error){
 					console.log(error)
@@ -99,8 +111,25 @@
 			};
 
 			function _setArriveStation(arriveStation) {
-				var count = _.each(arriveStation, "Ciclo_Estacion_Arribo");
-				console.log(count)
+				var count = _.countBy(arriveStation, "Ciclo_Estacion_Arribo");
+				console.log(count);
+
+				_.map(count, function(num, key){
+					console.log(num);
+					console.log(key);
+					_numArrives.push(num);
+					_numStation.push(key);
+				});
+
+
+
+				var arrive_stations = _.filter(_stations, function(a, b){
+					//console.log(a.id);
+					if(_numStation[b] === _stations[a.id]){
+						//console.log(_stations[_numStation[a]]);
+					}
+				});
+
 			}
 
 
@@ -110,5 +139,5 @@
 		angular
 		.module('ecobici')
 		.component('map', map);
-		MapCtrl.$inject = ["factoryEcobici", "_"];
+		MapCtrl.$inject = ["factoryEcobici", "serviceEcobici",  "_", "$timeout"];
 })();
