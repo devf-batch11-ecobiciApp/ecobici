@@ -32,6 +32,7 @@
 			var _polylinesGroup = new L.LayerGroup();
 			var _colorLine = null;
 			var _countLine = 0;
+			var _distance  = null;
 
 			factoryEcobici.map(_map);
 			factoryEcobici.getStations()
@@ -144,10 +145,13 @@
 						_colorLine = "#828189";
 					}
 					_secondPoint = new L.LatLng(destiny.location.lat, destiny.location.lon);
-					factoryEcobici._bikeDestinationMarker = L.marker([destiny.location.lat, destiny.location.lon], {icon: factoryEcobici.destination_icon() }).bindPopup("Arribos: "+destiny.times);
+					_distance = _firstPoint.distanceTo(_secondPoint); // convierto metros a kilometros
+					destiny.distance = _distance / 1000;
+					factoryEcobici._bikeDestinationMarker = L.marker([destiny.location.lat, destiny.location.lon], {icon: factoryEcobici.destination_icon() }).bindPopup("Arribos: "+destiny.times+", Distancia: "+destiny.distance.toFixed(1) + " km");
 					factoryEcobici._bikeDestinationMarkerGroup.addLayer(factoryEcobici._bikeDestinationMarker);
 					factoryEcobici._bikeDestinationMarkerGroup.addTo(_map);
 					_pointList = [_firstPoint, _secondPoint];
+					
 					_polyline = new L.Polyline(_pointList, {
 						color: _colorLine,
 						weight: 2,
