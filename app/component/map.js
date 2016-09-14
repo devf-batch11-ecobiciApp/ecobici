@@ -22,25 +22,34 @@
 			var _previousZp = null;
 			var _numArrives = [];
 			var _numStation = [];
-			var concurrences = [];
+			var _concurrences = [];
+			var count = null;
+			var arrive_stations = null;
+			var _firstPoint = null;
+			var _secondPoint = null;
+			var _polyline = null;
+			var _pointList = null;
+			var _polylinesGroup = new L.LayerGroup();
+			var _colorLine = null;
+			var _countLine = 0;
 
 			factoryEcobici.map(_map);
 			factoryEcobici.getStations()
 			.then(function(result){
 				if (result.statusText === "OK") {
-					_stations = result.data.stations;
+					_stations = result.data.stations;					
 				}
 			});
 	
 			function clickMap(e) {
-				factoryEcobici._zp_icon();
+				_polylinesGroup.clearLayers();
+				factoryEcobici._clearNearStationsMarkers();
 				_marker = L.marker([e.latlng.lat, e.latlng.lng]);
-				factoryEcobici._markerLayerGroup.addLayer(_marker);
-				factoryEcobici._markerLayerGroup.addTo(_map);
+				factoryEcobici._nearStationsGroup.addLayer(_marker);
+				factoryEcobici._nearStationsGroup.addTo(_map);
 				var latlng = {lat: parseFloat(e.latlng.lat), lng: parseFloat(e.latlng.lng)};
 				geocoder.geocode({'location': latlng}, function(results, status) {
 					if (status === "OK") {
-						//console.log(results)
 						_address = results[0].formatted_address;
 						_colonia = _address.split(", ")[1];
 
@@ -48,9 +57,10 @@
 						_currentZp = _colonia;
 
 						if(_previousZp !== _currentZp){
-							factoryEcobici.clear_layer();
-							_setStations(results);
+							factoryEcobici.clearBikeStationsGroup();
+							factoryEcobici.clearDestinationStationsMarkers();
 							serviceEcobici.layerIsLoading();
+							_setStations(results);
 						}
 					}
 				});
@@ -82,29 +92,28 @@
 					var near_stations = _.filter(_stations, function(a){
 						return a.districtName === _colonia;
 					});
-
 					_.each(near_stations, function(b){
 						$timeout(function(){
 							serviceEcobici.layerIsLoaded();
 							factoryEcobici._bikeStationMarker = L.marker([b.location.lat, b.location.lon], {icon: factoryEcobici.custom_icon()}).bindPopup(b.name).on('click', _markerClick);
-							factoryEcobici._bikeStationMarkerGroup.addLayer(factoryEcobici._bikeStationMarker);
-							factoryEcobici._bikeStationMarkerGroup.addTo(_map);
-							if (factoryEcobici._bikeStationMarkerGroup._leaflet_id !== undefined) {
-								_map.fitBounds(factoryEcobici._bikeStationMarkerGroup.getBounds());
+							factoryEcobici._bikeStationsMarkerGroup.addLayer(factoryEcobici._bikeStationMarker);
+							factoryEcobici._bikeStationsMarkerGroup.addTo(_map);
+							if (factoryEcobici._bikeStationsMarkerGroup._leaflet_id !== undefined) {
+								_map.fitBounds(factoryEcobici._bikeStationsMarkerGroup.getBounds());
 							}
 						},1500);
 
 					});
-					
-
-
 				}
 			}
 
 			function _markerClick(e){
+				_polylinesGroup.clearLayers();
+				_firstPoint = e.latlng;
+				_concurrences = [];
+				factoryEcobici.clearDestinationStationsMarkers();
 				factoryEcobici.getStadistics(this._popup._content.split(" ")[0])
 				.then(function(result){
-					//console.log(result);
 					_setArriveStation(result.data.result.records);
 				}, function(error){
 					console.log(error)
@@ -112,17 +121,50 @@
 			};
 
 			function _setArriveStation(arriveStation) {
-				var count = _.countBy(arriveStation, "Ciclo_Estacion_Arribo");
-				console.log(count);
-
+				count = _.countBy(arriveStation, "Ciclo_Estacion_Arribo");
 				_.map(count, function(num, key){
-					// _numArrives.push(num);
-					// _numStation.push(parseInt(key));
-					var arrive_stations = _.findWhere(_stations ,{id:parseInt(key)});
-					console.log(arrive_stations);
+					_numArrives = num;
+					_numStation = key;
+					arrive_stations = _.findWhere(_stations ,{id:parseInt(_numStation)});
+					arrive_stations.times = _numArrives;
+					_concurrences.push(arrive_stations);
+					_setDestinations(_concurrences);
+				});
+			}
+
+			function _setDestinations(dest) {
+
+
+				_.each(dest, function(destiny){
+					_countLine++;
+					if(_countLine % 2 === 0){
+						_colorLine = "#22ac9b";
+					}
+					else {
+						_colorLine = "#828189";
+					}
+					_secondPoint = new L.LatLng(destiny.location.lat, destiny.location.lon);
+					factoryEcobici._bikeDestinationMarker = L.marker([destiny.location.lat, destiny.location.lon], {icon: factoryEcobici.destination_icon() }).bindPopup("Arribos: "+destiny.times);
+					factoryEcobici._bikeDestinationMarkerGroup.addLayer(factoryEcobici._bikeDestinationMarker);
+					factoryEcobici._bikeDestinationMarkerGroup.addTo(_map);
+					_pointList = [_firstPoint, _secondPoint];
+					_polyline = new L.Polyline(_pointList, {
+						color: _colorLine,
+						weight: 2,
+						opacity: 0.9,
+						smoothFactor: 1,
+						clickable: true
+					});
+
 				});
 
+				_polylinesGroup.addLayer(_polyline);
+				_polylinesGroup.addTo(_map);
 			}
+
+			// function _destinationMarkerClick(e){
+			// 	console.log(e);
+			// };
 
 			_map.on('click', clickMap);
 		}

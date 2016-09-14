@@ -4,9 +4,10 @@
 	function factoryEcobici ($q, $http) {
 		var factory = {};
 		factory._map_element = L.map('mapid').setView([19.4497336, -99.1753877], 13);
-		factory._bikeStationMarkerGroup = new L.featureGroup();
-		factory._markerLayerGroup = new L.layerGroup();
-		factory._LayerGroup = L.layerGroup();
+		factory._bikeStationsMarkerGroup = new L.featureGroup();
+		factory._bikeDestinationMarker = new L.layerGroup();
+		factory._bikeDestinationMarkerGroup = new L.featureGroup();
+		factory._nearStationsGroup = new L.layerGroup();
 
 		factory.loaderTemplate = [
 			'<div class="m-loading">',
@@ -51,13 +52,25 @@
 			});
 		}
 
-		factory._zp_icon = function() {
-			factory._markerLayerGroup.clearLayers();
+		factory.destination_icon = function() {
+			return L.icon({
+			  iconUrl: './assets/destination.png',
+			  iconSize: [50, 50],
+			  iconAnchor: [5, 36],
+			  popupAnchor: [20, -40]
+			});
 		}
 
-		factory.clear_layer = function() {
-			factory._bikeStationMarkerGroup.clearLayers();
-			factory._LayerGroup.clearLayers();
+		factory._clearNearStationsMarkers = function() {
+			factory._nearStationsGroup.clearLayers();
+		}
+
+		factory.clearBikeStationsGroup = function() {
+			factory._bikeStationsMarkerGroup.clearLayers();
+		}
+
+		factory.clearDestinationStationsMarkers = function() {
+			factory._bikeDestinationMarkerGroup.clearLayers();
 		}
 
 		factory.getStations = function() {
@@ -77,17 +90,20 @@
 		factory.getStadistics = function(cer) {
 			var deferr = $q.defer();
       var data = {
-      	limit: 10,
-        resource_id: 'ac80d8cf-15f4-4b15-9b98-b1451ce49acf',
-        filters: {
-          "Ciclo_Estacion_Retiro": cer
+      	"limit": 50,
+        "resource_id": 'ac80d8cf-15f4-4b15-9b98-b1451ce49acf',
+        "filters": {
+          "Ciclo_Estacion_Retiro": parseInt(cer)
         }
       };
 
 			$http({
 				method: "GET",
 				url: 'http://datos.labcd.mx/api/action/datastore_search',
-				params:data
+				params:data,
+				headers:{
+					"Content-type": "application/json"
+				}
 			})
 			.then(function(result){
 				deferr.resolve(result);
