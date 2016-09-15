@@ -6,8 +6,9 @@
 	};
 
 
-	function statusCtrl (ApiService) {
+	function statusCtrl (ApiService, $q, factoryEcobici) {
 		var status = this;
+		var _map = factoryEcobici._map_element;
         status.stations = null;
 	    ApiService.getToken()
 	        .then(function (response) {
@@ -27,11 +28,12 @@
 	    	});
 	   
 	    }
+
 	}
 
-	statusCtrl.$inject = ["ApiService", "$q"];
+	//statusCtrl.$inject = ["ApiService", "$q", "factoryEcobici"];
 
-	statusApp.$inject = ["ApiService"];
+	statusApp.$inject = ["ApiService", "$q", "factoryEcobici"];
 	angular
 		.module("ecobici")
 		.component("statusApp", statusApp);

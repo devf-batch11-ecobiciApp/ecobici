@@ -10,13 +10,13 @@
 		function MapCtrl(factoryEcobici, serviceEcobici, _, $timeout) {
 			var map = this;
 			var geocoder = new google.maps.Geocoder;
-  		var infowindow = new google.maps.InfoWindow;
-  		var _map = factoryEcobici._map_element;
+	  		var infowindow = new google.maps.InfoWindow;
+	  		var _map = factoryEcobici._map_element;
 			var _marker = null			
-  		var _zp = null;
-  		var _address = null;
-  		var _colonia = null;
-  		var _stations = null;
+	  		var _zp = null;
+	  		var _address = null;
+	  		var _colonia = null;
+	  		var _stations = null;
 			var _bikeStationMarker = null;
 			var _currentZp = null;
 			var _previousZp = null;
@@ -33,7 +33,12 @@
 			var _colorLine = null;
 			var _countLine = 0;
 			var _distance  = null;
-
+			var sidebarElement = null;
+			// var sidebar = L.control.sidebar(sidebarElement, {
+			//     position: 'left'
+			// });
+			
+			//
 			factoryEcobici.map(_map);
 			factoryEcobici.getStations()
 			.then(function(result){
@@ -109,6 +114,16 @@
 			}
 
 			function _markerClick(e){
+				sidebarElement = angular.element(document.getElementById('sidebar'));
+					$timeout(function () {
+					console.log(_map)
+					console.log(sidebarElement[0])
+					_map.addControl(sidebarElement[0]);
+		            sidebarElement.show();
+		        }, 2500);
+
+				// _map.addControl(sidebarElement);
+				// sidebarElement.show();
 				_polylinesGroup.clearLayers();
 				_firstPoint = e.latlng;
 				_concurrences = [];
